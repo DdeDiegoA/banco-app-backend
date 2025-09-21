@@ -27,11 +27,15 @@
 
 ## Project setup
 
+This project uses [pnpm](https://pnpm.io/) as package manager. To install the dependencies, run the following command:
+
 ```bash
 $ pnpm install
 ```
 
 ## Compile and run the project
+
+You can run the project in different modes:
 
 ```bash
 # development
@@ -56,6 +60,65 @@ $ pnpm run test:e2e
 # test coverage
 $ pnpm run test:cov
 ```
+
+## Project Structure
+
+The project is organized into the following main directories:
+
+-   `src`: Contains the source code of the application.
+    -   `common`: Contains shared resources like DTOs, enums, and utility functions.
+    -   `config`: Contains configuration files, such as database configuration.
+    -   `modules`: Contains the different modules of the application, each with its own controllers, services, and entities.
+-   `dist`: Contains the compiled JavaScript code.
+-   `test`: Contains the tests for the application.
+-   `node_modules`: Contains the project's dependencies.
+
+## Project Guide
+
+The application is divided into the following modules:
+
+### Users Module
+
+-   **Path:** `src/modules/users`
+-   **Description:** Manages users and clients of the bank.
+-   **Components:**
+    -   `users.module.ts`: Module definition.
+    -   `users.controller.ts`: API endpoints for user management.
+    -   `users.service.ts`: Business logic for user operations.
+    -   `entities/user.entity.ts`: TypeORM entity for the `User` model.
+    -   `entities/client.entity.ts`: TypeORM entity for the `Client` model.
+
+### Auth Module
+
+-   **Path:** `src/modules/auth`
+-   **Description:** Handles user authentication and authorization using JWT.
+-   **Components:**
+    -   `auth.module.ts`: Module definition.
+    -   `auth.controller.ts`: API endpoints for login and authentication.
+    -   `auth.service.ts`: Business logic for authentication.
+
+### Accounts Module
+
+-   **Path:** `src/modules/accounts`
+-   **Description:** Manages bank accounts.
+-   **Components:**
+    -   `accounts.module.ts`: Module definition.
+    -   `accounts.controller.ts`: API endpoints for account management.
+    -   `accounts.service.ts`: Business logic for account operations.
+    -   `entities/account.entity.ts`: TypeORM entity for the `Account` model.
+    -   `dto/create-account.dto.ts`: Data Transfer Object for creating an account.
+
+### Transactions Module
+
+-   **Path:** `src/modules/transactions`
+-   **Description:** Manages financial transactions between accounts.
+-   **Components:**
+    -   `transactions.module.ts`: Module definition.
+    -   `transactions.controller.ts`: API endpoints for transactions.
+    -   `transactions.service.ts`: Business logic for transfers and other transactions.
+    -   `entities/transaction.entity.ts`: TypeORM entity for the `Transaction` model.
+    -   `entities/ledger-entry.entity.ts`: TypeORM entity for ledger entries, which record the debits and credits for each transaction.
+    -   `dto/transfer.dto.ts`: Data Transfer Object for transferring funds.
 
 ## Deployment
 
