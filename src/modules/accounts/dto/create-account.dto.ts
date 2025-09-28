@@ -1,7 +1,7 @@
 import { IsEnum, IsUUID } from 'class-validator';
 import { AccountType } from '../entities/account.entity';
 
-export class CreatAccountDto {
+export class CreateAccountDto {
   @IsUUID()
   clientId: string;
 
