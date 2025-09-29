@@ -22,7 +22,7 @@ export class UsersService {
   }
 
   findAll(): Promise<User[]> {
-    return this.userRepository.find({ where: { role: UserRole.ADMIN } });
+    return this.userRepository.find();
   }
 
   async findOne(id: string): Promise<User> {
@@ -34,12 +34,12 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    await this.userRepository.update(id, updateUserDto);
-    const updated = await this.userRepository.findOneBy({ id });
-    if (!updated) {
+    const user = await this.findOne(id);
+    if (!user) {
       throw new NotFoundException(`User with id "${id}" not found`);
     }
-    return updated;
+    this.userRepository.merge(user, updateUserDto);
+    return this.userRepository.save(user);
   }
 
   async remove(id: string): Promise<void> {
