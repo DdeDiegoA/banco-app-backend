@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
@@ -12,32 +17,70 @@ export class ClientsService {
     private readonly clientRepository: Repository<Client>,
   ) {}
 
-  create(createClientDto: CreateClientDto): Promise<Client> {
-    const client = this.clientRepository.create(createClientDto);
-    return this.clientRepository.save(client);
+  async create(createClientDto: CreateClientDto): Promise<Client> {
+    try {
+      const client = this.clientRepository.create(createClientDto);
+      return await this.clientRepository.save(client);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
-  findAll(): Promise<Client[]> {
-    return this.clientRepository.find();
+  async findAll(): Promise<Client[]> {
+    try {
+      return await this.clientRepository.find();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async findOne(id: string): Promise<Client> {
-    const client = await this.clientRepository.findOneBy({ id });
-    if (!client) {
-      throw new NotFoundException(`Client with id ${id} not found`);
+    try {
+      const client = await this.clientRepository.findOneBy({ id });
+      if (!client) {
+        throw new NotFoundException(`Client with id ${id} not found`);
+      }
+      return client;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        const status = error.getStatus();
+        throw new HttpException(
+          {
+            status,
+            error: error.message,
+          },
+          status,
+          {
+            cause: error,
+          },
+        );
+      } else {
+        throw new InternalServerErrorException(error);
+      }
     }
-    return client;
   }
 
   async update(id: string, updateClientDto: UpdateClientDto): Promise<Client> {
-    const result = await this.clientRepository.update(id, updateClientDto);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Client with id ${id} not found`);
+    try {
+      const client = await this.findOne(id);
+      if (!client) {
+        throw new NotFoundException(`User with id "${id}" not found`);
+      }
+      this.clientRepository.merge(client, updateClientDto);
+      return await this.clientRepository.save(client);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
-    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
-    await this.clientRepository.delete(id);
+    try {
+      const result = await this.clientRepository.delete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Client with id "${id}" not found`);
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 }
