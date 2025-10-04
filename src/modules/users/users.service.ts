@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeepPartial } from 'typeorm';
 import { User, UserRole } from './entities/user.entity';
@@ -12,40 +16,60 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto): Promise<User> {
-    const data: DeepPartial<User> = {
-      ...createUserDto,
-      role: UserRole.CLIENT,
-    };
-    const user = this.userRepository.create(data);
-    return this.userRepository.save(user);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const data: DeepPartial<User> = {
+        ...createUserDto,
+        role: UserRole.CLIENT,
+      };
+      const user = this.userRepository.create(data);
+      return await this.userRepository.save(user);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
-  findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(): Promise<User[]> {
+    try {
+      return await this.userRepository.find();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new NotFoundException(`User with id "${id}" not found`);
+    try {
+      const user = await this.userRepository.findOneBy({ id });
+      if (!user) {
+        throw new NotFoundException(`User with id "${id}" not found`);
+      }
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
-    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
-    if (!user) {
-      throw new NotFoundException(`User with id "${id}" not found`);
+    try {
+      const user = await this.findOne(id);
+      if (!user) {
+        throw new NotFoundException(`User with id "${id}" not found`);
+      }
+      this.userRepository.merge(user, updateUserDto);
+      return await this.userRepository.save(user);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
-    this.userRepository.merge(user, updateUserDto);
-    return this.userRepository.save(user);
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.userRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with id "${id}" not found`);
+    try {
+      const result = await this.userRepository.delete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`User with id "${id}" not found`);
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 }
