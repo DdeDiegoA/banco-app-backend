@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account, AccountType } from './entities/account.entity';
+//import { Account, AccountType } from './entities/account.entity';
+import { Account } from './entities/account.entity';
 import { Client } from '../users/entities/client.entity';
 import { User } from '../users/entities/user.entity';
+import { ResponseAccountDto } from './dto/response-account.dto';
+import { CreateAccountDto } from './dto/create-account.dto';
 
 @Injectable()
 export class AccountsService {
@@ -16,9 +19,8 @@ export class AccountsService {
     private userRepo: Repository<User>,
   ) {}
 
-  async createAccount(clientId: string, type: AccountType): Promise<Account> {
-    const client = await this.userRepo.findOne({ where: { id: clientId } });
-    console.log(client);
+  async createAccount(dto: CreateAccountDto): Promise<ResponseAccountDto> {
+    const client = await this.userRepo.findOne({ where: { id: dto.clientId } });
     if (!client) throw new Error('Client not found');
 
     const account = this.accountsRepo.create({
@@ -28,10 +30,18 @@ export class AccountsService {
           .toString()
           .padStart(9, '0'),
       client,
-      type,
+      type: dto.type,
       balanceCents: '0',
     });
-    return this.accountsRepo.save(account);
+
+    const saved = await this.accountsRepo.save(account);
+    return {
+      id: saved.id,
+      accountNumber: saved.accountNumber,
+      type: saved.type,
+      balanceCents: saved.balanceCents,
+      clientId: client.id,
+    };
   }
 
   async getBalance(accountId: string): Promise<number> {

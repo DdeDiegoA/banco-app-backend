@@ -1,22 +1,22 @@
-import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { TransferDto } from './dto/transfer-account.dto';
+import { ResponseAccountDto } from './dto/response-account.dto';
 
 @Controller('accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
-  @UseGuards()
   @Post()
-  async create(@Body() dto: CreateAccountDto) {
-    return this.accountsService.createAccount(dto.clientId, dto.type);
+  async create(@Body() dto: CreateAccountDto): Promise<ResponseAccountDto> {
+    return this.accountsService.createAccount(dto);
   }
 
-  @UseGuards()
   @Get(':id/balance')
-  async balance(@Param('id') id: string) {
-    return { balance: await this.accountsService.getBalance(id) };
+  async getBalance(@Param('id') id: string): Promise<{ balance: number }> {
+    const balance = await this.accountsService.getBalance(id);
+    return { balance };
   }
 
   @Post('transfer')
