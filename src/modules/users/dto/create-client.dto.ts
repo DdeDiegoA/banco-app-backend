@@ -1,7 +1,9 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, Length, NotContains } from 'class-validator';
 
 export class CreateClientDto {
   @IsString()
+  @NotContains(' ')
+  @Length(4, 20)
   username: string;
 
   @IsString()

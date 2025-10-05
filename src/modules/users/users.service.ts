@@ -20,7 +20,7 @@ export class UsersService {
     try {
       const data: DeepPartial<User> = {
         ...createUserDto,
-        role: UserRole.CLIENT,
+        role: UserRole.ADMIN,
       };
       const user = this.userRepository.create(data);
       return await this.userRepository.save(user);
