@@ -6,6 +6,7 @@ import { AccountsModule } from './modules/accounts/accounts.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import databaseConfig from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BcryptService } from './modules/auth/bcrypt.service';
 
 @Module({
   imports: [
@@ -34,5 +35,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     AccountsModule,
     TransactionsModule,
   ],
+  providers: [BcryptService],
 })
 export class AppModule {}
