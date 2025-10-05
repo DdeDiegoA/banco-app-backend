@@ -6,10 +6,11 @@ import { User } from './entities/user.entity';
 import { Client } from './entities/client.entity';
 import { ClientsController } from './clients.controller';
 import { ClientsService } from './clients.service';
+import { BcryptService } from '../auth/bcrypt.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Client])],
   controllers: [UsersController, ClientsController],
-  providers: [UsersService, ClientsService],
+  providers: [UsersService, ClientsService, BcryptService],
 })
 export class UsersModule {}
