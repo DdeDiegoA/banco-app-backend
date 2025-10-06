@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Client } from '../../users/entities/client.entity';
 import { LedgerEntry } from 'src/modules/transactions/entities/ledger-entry.entity';
@@ -30,6 +31,7 @@ export class Account {
   balanceCents: string;
 
   @ManyToOne(() => Client, (c) => c.accounts, { nullable: false })
+  @JoinColumn({ name: 'client_id' })
   client: Client;
 
   @OneToMany(() => Transaction, (t) => t.fromAccount)

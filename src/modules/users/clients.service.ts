@@ -9,16 +9,21 @@ import { Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { BcryptService } from '../auth/bcrypt.service';
 
 @Injectable()
 export class ClientsService {
   constructor(
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+    private readonly bcryptService: BcryptService,
   ) {}
 
   async create(createClientDto: CreateClientDto): Promise<Client> {
     try {
+      createClientDto.passwordHash = await this.bcryptService.hashPassword(
+        createClientDto.passwordHash,
+      );
       const client = this.clientRepository.create(createClientDto);
       return await this.clientRepository.save(client);
     } catch (error) {
@@ -36,7 +41,22 @@ export class ClientsService {
 
   async findOne(id: string): Promise<Client> {
     try {
-      const client = await this.clientRepository.findOneBy({ id });
+      const client = await this.clientRepository.findOne({
+        where: { id },
+        relations: ['accounts'],
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          phone: true,
+          accounts: {
+            id: true,
+            accountNumber: true,
+            type: true,
+            balanceCents: true,
+          },
+        },
+      });
       if (!client) {
         throw new NotFoundException(`Client with id ${id} not found`);
       }
