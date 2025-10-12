@@ -1,13 +1,15 @@
-import { IsUUID, IsNumber, Min } from 'class-validator';
+import { IsNumber, Min, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class TransferDto {
-  @IsUUID()
-  fromAccountId: string;
+  @IsString()
+  fromAccountNumber: string;
 
-  @IsUUID()
-  toAccountId: string;
+  @IsString()
+  toAccountNumber: string;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   amount: number; // en decimal (ej. 12.50) — convertiremos a cents
 }

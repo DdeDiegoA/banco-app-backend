@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction, TransactionStatus } from './entities/transaction.entity';
 import { Account } from '../accounts/entities/account.entity';
 import { LedgerEntry, EntryType } from './entities/ledger-entry.entity';
+import { TransferDto } from './dto/transfer.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -13,29 +14,27 @@ export class TransactionsService {
     private txRepo: Repository<Transaction>,
     @InjectRepository(Account)
     private accountsRepo: Repository<Account>,
-    @InjectRepository(LedgerEntry)
-    private ledgerRepo: Repository<LedgerEntry>,
   ) {}
 
   /**
    * Transfer amount (decimal) between accounts.
    * We use a DB transaction to ensure atomicity.
    */
-  async transfer(
-    fromAccountId: string,
-    toAccountId: string,
-    amountDecimal: number,
-  ) {
-    if (fromAccountId === toAccountId)
+  async transfer(transferData: TransferDto): Promise<Transaction> {
+    const { fromAccountNumber, toAccountNumber, amount } = transferData;
+
+    if (fromAccountNumber === toAccountNumber)
       throw new Error('Cannot transfer to same account');
-    const amountCents = Math.round(amountDecimal * 100);
+    const amountCents = Math.round(amount * 100);
 
     return this.dataSource.transaction(async (manager) => {
       // lock rows (production: use SELECT ... FOR UPDATE)
       const from = await manager.findOne(Account, {
-        where: { id: fromAccountId },
+        where: { accountNumber: fromAccountNumber },
       });
-      const to = await manager.findOne(Account, { where: { id: toAccountId } });
+      const to = await manager.findOne(Account, {
+        where: { accountNumber: toAccountNumber },
+      });
 
       if (!from || !to) throw new Error('Account not found');
 
@@ -55,29 +54,29 @@ export class TransactionsService {
       from.debitCents(amountCents);
       to.creditCents(amountCents);
 
+      await manager.save([from, to]);
+
+      const savedTx = await manager.save(tx);
+      savedTx.status = TransactionStatus.COMPLETED;
+
       // create ledger entries (double-entry)
       const debitEntry = manager.create(LedgerEntry, {
-        transaction: tx,
+        transaction: savedTx,
         account: from,
         type: EntryType.DEBIT,
         amountCents: amountCents.toString(),
       });
       const creditEntry = manager.create(LedgerEntry, {
-        transaction: tx,
+        transaction: savedTx,
         account: to,
         type: EntryType.CREDIT,
         amountCents: amountCents.toString(),
       });
+      await manager.save([debitEntry, creditEntry]);
 
-      tx.ledgerEntries = [debitEntry, creditEntry];
-      tx.status = TransactionStatus.COMPLETED;
-
-      // persist: save accounts (manager.save will do insert/update)
-      await manager.save(from);
-      await manager.save(to);
-      const savedTx = await manager.save(tx);
-      // ledger entries saved via cascade, but ensure persistent
-      return savedTx;
+      savedTx.ledgerEntries = [debitEntry, creditEntry];
+      const finalTx = await manager.save(savedTx);
+      return finalTx;
     });
   }
 }

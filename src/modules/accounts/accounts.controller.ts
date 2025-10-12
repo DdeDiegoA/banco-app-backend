@@ -1,8 +1,9 @@
 import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { TransferDto } from './dto/transfer-account.dto';
 import { ResponseAccountDto } from './dto/response-account.dto';
+import { DepositDto } from './dto/deposit.dto';
+import { WithdrawDto } from './dto/withdraw.dto';
 
 @Controller('accounts')
 export class AccountsController {
@@ -19,13 +20,17 @@ export class AccountsController {
     return { balance };
   }
 
-  @Post('transfer')
-  async transfer(@Body() dto: TransferDto) {
-    await this.accountsService.transferFunds(
-      dto.fromAccountId,
-      dto.toAccountId,
-      dto.amountCents,
-    );
-    return { success: true, message: 'Transferencia realizada con éxito' };
+  @Post('deposit')
+  async deposit(@Body() depositDto: DepositDto) {
+    const { accountNumber, amount } = depositDto;
+    await this.accountsService.deposit(accountNumber, amount);
+    return { success: true, message: 'Deposit successful' };
+  }
+
+  @Post('withdraw')
+  async withdraw(@Body() withdrawDto: WithdrawDto) {
+    const { accountNumber, amount } = withdrawDto;
+    await this.accountsService.withdraw(accountNumber, amount);
+    return { success: true, message: 'Withdrawal successful' };
   }
 }

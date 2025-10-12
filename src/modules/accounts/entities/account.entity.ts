@@ -55,8 +55,8 @@ export class Account {
     this.balanceCents = (current - BigInt(amountCents)).toString();
   }
   creditCents(amountCents: number) {
-    this.balanceCents = (
-      BigInt(this.balanceCents) + BigInt(amountCents)
-    ).toString();
+    const current = BigInt(this.balanceCents);
+    const newBalance = current + BigInt(amountCents);
+    this.balanceCents = newBalance.toString();
   }
 }

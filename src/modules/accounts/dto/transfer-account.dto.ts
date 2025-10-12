@@ -1,13 +1,13 @@
-import { IsUUID, IsInt, Min } from 'class-validator';
+import { IsString, IsNumber, Min } from 'class-validator';
 
 export class TransferDto {
-  @IsUUID()
-  fromAccountId: string;
+  @IsString()
+  fromAccountNumber: string;
 
-  @IsUUID()
-  toAccountId: string;
+  @IsString()
+  toAccountNumber: string;
 
-  @IsInt()
-  @Min(1)
+  @IsNumber()
+  @Min(0)
   amountCents: number;
 }

@@ -37,7 +37,7 @@ export class Transaction {
   })
   status: TransactionStatus;
 
-  @OneToMany(() => LedgerEntry, (le) => le.transaction, { cascade: true })
+  @OneToMany(() => LedgerEntry, (le) => le.transaction)
   ledgerEntries: LedgerEntry[];
 
   @CreateDateColumn()
