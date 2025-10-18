@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString } from 'class-validator';
 
 export class UpdateClientDto {
   @IsOptional()
@@ -8,6 +8,9 @@ export class UpdateClientDto {
   @IsOptional()
   @IsString()
   passwordHash?: string;
+
+  @IsEmail()
+  email: string;
 
   @IsOptional()
   @IsString()

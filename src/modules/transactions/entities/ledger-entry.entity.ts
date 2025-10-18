@@ -21,6 +21,9 @@ export class LedgerEntry {
   @ManyToOne(() => Transaction, (t) => t.ledgerEntries, { onDelete: 'CASCADE' })
   transaction: Transaction;
 
+  @Column({ name: 'transactionId' })
+  transactionId: string;
+
   @ManyToOne(() => Account, (a) => a.ledgerEntries, { eager: true })
   account: Account;
 
